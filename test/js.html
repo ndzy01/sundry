@@ -1,0 +1,279 @@
+<!--
+ * @Author: ndzy
+ * @Date: 2020-02-23 19:27:56
+ * @LastEditTime: 2020-02-24 14:54:59
+ * @LastEditors: ndzy
+ -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      a {
+        /* display: block; */
+        /* width: 120px;
+        height: 40px; */
+        padding-left: 0.75rem;
+        margin-left: 0.3125rem;
+        text-decoration: none;
+        color: #ffffff;
+        background-color: purple;
+      }
+      a:hover {
+        background-color: orangered;
+      }
+
+      #root {
+        position: relative;
+        margin: 3.125rem;
+      }
+      .fDiv {
+        margin: 0.625rem;
+        display: block;
+      }
+      .sDiv {
+        display: none;
+        margin: 0.625rem;
+      }
+      .sDivShow {
+        margin: 0.625rem;
+        display: block;
+      }
+      button {
+        width: 20px; /*设置按钮宽度*/
+
+        height: 20px; /*设置按钮高度*/
+
+        color: white; /*字体颜色*/
+
+        background-color: cornflowerblue; /*按钮背景颜色*/
+
+        border-radius: 3px; /*让按钮变得圆滑一点*/
+
+        border-width: 0; /*消去按钮丑的边框*/
+
+        margin: 0;
+
+        outline: none; /*取消轮廓*/
+
+        font-family: KaiTi; /*字体设置为楷体*/
+
+        font-size: 17px; /*设置字体大小*/
+
+        text-align: center; /*字体居中*/
+
+        cursor: pointer; /*设置鼠标箭头手势*/
+      }
+
+      button:hover {
+        /*鼠标移动时的颜色变化*/
+        background-color: antiquewhite;
+      }
+    </style>
+  </head>
+  <body>
+    <!--  -->
+    <div id="root"></div>
+
+    <script>
+      // #region 创建标签
+      function createHtmlA(htmlElement, content, url) {
+        const a = document.createElement('a')
+        a.setAttribute('href', url)
+        a.setAttribute('target', '_blank')
+        a.innerHTML = content
+        htmlElement.appendChild(a)
+      }
+      function createHtmlDiv(obj) {
+        const div = document.createElement('div')
+        if (obj.parentId == 0) {
+          addBtn(div)
+          createHtmlA(div, obj.content, obj.url)
+          div.setAttribute('id', obj.id)
+          div.setAttribute('class', 'fDiv')
+          document.getElementById('root').appendChild(div)
+        } else {
+          if (obj.children) {
+            addBtn(div)
+            createHtmlA(div, obj.content, obj.url)
+            div.setAttribute('flag', '0')
+            div.setAttribute('id', obj.id)
+            div.setAttribute('class', 'sDiv')
+            document.getElementById(obj.parentId).appendChild(div)
+          } else {
+            createHtmlA(div, obj.content, obj.url)
+            div.setAttribute('flag', '0')
+            div.setAttribute('id', obj.id)
+            div.setAttribute('class', 'sDiv')
+            document.getElementById(obj.parentId).appendChild(div)
+          }
+        }
+      }
+
+      function addBtn(htmlElement) {
+        const span = document.createElement('span')
+        const btn = document.createElement('button')
+        btn.setAttribute('type', 'button')
+        btn.setAttribute('class', 'btn')
+        btn.setAttribute('class', 'btn-danger')
+        btn.setAttribute('onclick', 'add(this)')
+        btn.innerHTML = '+'
+        span.appendChild(btn)
+        htmlElement.appendChild(span)
+      }
+      function add(e) {
+        const div = e.parentNode.parentNode
+        const children = div.childNodes
+        if (div.getAttribute('flag')) {
+          for (let i = 0; i < children.length; i++) {
+            if (i > 1) {
+              const flag = children[i].getAttribute('flag')
+              if (flag == 0) {
+                children[0].children[0].innerHTML = '-'
+
+                children[i].className = 'sDivShow'
+                children[i].setAttribute('flag', '1')
+              } else {
+                children[0].children[0].innerHTML = '+'
+                children[i].className = 'sDiv'
+                children[i].setAttribute('flag', '0')
+              }
+            }
+          }
+        } else {
+          // #region 根目录展开/关闭
+          for (let i = 0; i < children.length; i++) {
+            if (i > 1) {
+              const flag = children[i].getAttribute('flag')
+              if (flag == 0) {
+                children[0].children[0].innerHTML = '-'
+                children[i].className = 'sDivShow'
+                children[i].setAttribute('flag', '1')
+              } else {
+                children[0].children[0].innerHTML = '+'
+                children[i].className = 'sDiv'
+                children[i].setAttribute('flag', '0')
+              }
+            }
+          }
+        }
+        // #endregion
+        //
+      }
+      function treeMenu(arr) {
+        for (let i = 0; i < arr.length; i++) {
+          const item = arr[i]
+          createHtmlDiv(item, i)
+          if (item.children) {
+            treeMenu(item.children)
+          }
+        }
+      }
+
+      // #endregion
+      //
+
+      // #region 数组转树 toTree
+      function toTree(list, parId) {
+        let obj = {}
+        let result = []
+        //将数组中数据转为键值对结构 (这里的数组和obj会相互引用)
+        list.map(el => {
+          obj[el.id] = el
+        })
+        for (let i = 0, len = list.length; i < len; i++) {
+          let id = list[i].parentId
+          if (id == parId) {
+            result.push(list[i])
+            continue
+          }
+          if (obj[id].children) {
+            obj[id].children.push(list[i])
+          } else {
+            obj[id].children = [list[i]]
+          }
+        }
+        return result
+      }
+      // #endregion
+      //
+
+      // #region ajax
+      function ajax() {
+        var ajaxData = {
+          type: arguments[0].type || 'GET',
+          url: arguments[0].url || '',
+          async: arguments[0].async || 'true',
+          data: arguments[0].data || null,
+          dataType: arguments[0].dataType || 'text',
+          contentType:
+            arguments[0].contentType || 'application/x-www-form-urlencoded',
+          beforeSend: arguments[0].beforeSend || function() {},
+          success: arguments[0].success || function() {},
+          error: arguments[0].error || function() {},
+        }
+        ajaxData.beforeSend()
+        var xhr = createxmlHttpRequest()
+        xhr.responseType = ajaxData.dataType
+        xhr.open(ajaxData.type, ajaxData.url, ajaxData.async)
+        xhr.setRequestHeader('Content-Type', ajaxData.contentType)
+        xhr.send(convertData(ajaxData.data))
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              ajaxData.success(xhr.response)
+            } else {
+              ajaxData.error()
+            }
+          }
+        }
+      }
+
+      function createxmlHttpRequest() {
+        if (window.ActiveXObject) {
+          return new ActiveXObject('Microsoft.XMLHTTP')
+        } else if (window.XMLHttpRequest) {
+          return new XMLHttpRequest()
+        }
+      }
+
+      function convertData(data) {
+        if (typeof data === 'object') {
+          var convertResult = ''
+          for (var c in data) {
+            convertResult += c + '=' + data[c] + '&'
+          }
+          convertResult = convertResult.substring(0, convertResult.length - 1)
+          return convertResult
+        } else {
+          return data
+        }
+      }
+
+      // #endregion
+      //
+
+      ajax({
+        type: 'GET',
+        url: 'http://www.ndzy01.com:3851/',
+        dataType: 'json',
+        beforeSend: function() {
+          //some js code
+        },
+        success: function(res) {
+          treeMenu(toTree(res.data, 0))
+        },
+        error: function() {
+          console.log('error')
+        },
+      })
+    </script>
+  </body>
+</html>

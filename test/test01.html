@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./ajax.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      ajax({
+        type: 'POST',
+        url: 'http://www.ndzy01.com:5566/getNote',
+        dataType: 'json',
+        data: { id: '5eb9303d5b745432717d1321' },
+        beforeSend: function () {
+          //some js code
+        },
+        success: function (res) {
+          console.log(res)
+        },
+        error: function () {
+          console.log('error')
+        },
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,61 @@
+<!--
+ * @Author: ndzy
+ * @Date: 2020-02-26 07:48:10
+ * @LastEditTime: 2020-02-26 08:31:11
+ * @LastEditors: ndzy
+ -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>id生成器</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://unpkg.com/view-design/dist/styles/iview.css"
+    />
+    <script
+      type="text/javascript"
+      src="http://vuejs.org/js/vue.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="http://unpkg.com/view-design/dist/iview.min.js"
+    ></script>
+    <style>
+      #app {
+        position: relative;
+        top: 3.125rem;
+        left: 3.125rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <i-button @click="fun(10)">10</i-button>
+      <i-button @click="fun(20)">20</i-button>
+      <i-button @click="fun(30)">30</i-button>
+      <span>{{ i1 }}</span>
+    </div>
+    <script>
+      new Vue({
+        el: '#app',
+        data: {
+          i1: '',
+        },
+        methods: {
+          fun(number) {
+            const str =
+              'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678' /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+            let maxPos = str.length
+            let pwd = ''
+            for (let i = 0; i < number; i++) {
+              pwd += str.charAt(Math.floor(Math.random() * maxPos))
+            }
+            this.i1 = pwd
+          },
+        },
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      #container {
+        width: 100vw;
+        height: 100vh;
+      }
+      #myPageTop {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        font-size: 14px;
+        background: none 0px 0px repeat scroll rgb(255, 255, 255);
+        border-width: 1px;
+        border-style: solid;
+        border-color: rgb(204, 204, 204);
+        border-image: initial;
+        margin: 10px auto;
+        padding: 6px;
+      }
+
+      header {
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      header .title {
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        text-align: center;
+        width: 400px;
+        height: 64px;
+        line-height: 64px;
+        font-size: 2.5rem;
+        box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
+      }
+      footer {
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      footer .title {
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        text-align: center;
+        /* width: 400px; */
+        height: 64px;
+        line-height: 64px;
+        font-size: 2.5rem;
+        box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
+      }
+      #info {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        position: fixed;
+        top: 100px;
+        background-color: white;
+        width: auto;
+        border-width: 0;
+        left: 220px;
+        box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
+      }
+      #left {
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        position: absolute;
+        top: 100px;
+        background-color: white;
+        min-width: 10rem;
+        border-width: 0;
+        left: 50px;
+        height: 80%;
+        box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
+        box-sizing: border-box;
+      }
+      #right {
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        position: absolute;
+        top: 100px;
+        background-color: white;
+        min-width: 10rem;
+        border-width: 0;
+        right: 50px;
+        height: 80%;
+        box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
+        box-sizing: border-box;
+      }
+      .dial {
+        width: 100%;
+        height: 30%;
+      }
+    </style>
+    <script
+      type="text/javascript"
+      src="https://webapi.amap.com/maps?v=1.4.15&key=66bb24f6fb463acfaf18883751b32f3f&plugin=AMap.Autocomplete,AMap.PlaceSearch"
+    ></script>
+    <script src="./echarts.min.js"></script>
+  </head>
+  <body>
+    <div id="container"></div>
+    <header>
+      <div style="display: flex; justify-content: center;">
+        <div class="title"><span>高德地图</span></div>
+      </div>
+    </header>
+    <div id="left">
+      <div id="dial1" class="dial"></div>
+      <div id="dial2" class="dial"></div>
+      <div id="dial3" class="dial"></div>
+      <!-- <div id="main"></div> -->
+    </div>
+    <div id="right">
+      <div id="dial1" class="dial"></div>
+      <div id="dial2" class="dial"></div>
+      <div id="dial3" class="dial"></div>
+    </div>
+    <div id="info">
+      当前位置
+    </div>
+    <div id="myPageTop">
+      <table>
+        <tr>
+          <td>
+            <label>请输入关键字：</label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input id="tipinput" />
+          </td>
+        </tr>
+      </table>
+    </div>
+    <footer>
+      <div style="display: flex; justify-content: center;">
+        <div class="title"><span>高德地图</span></div>
+      </div>
+    </footer>
+    <script type="text/javascript">
+      const mapObj = new AMap.Map('container', {
+        resizeEnable: true,
+      })
+
+      //输入提示
+      const autoOptions = {
+        input: 'tipinput',
+      }
+      const auto = new AMap.Autocomplete(autoOptions)
+      const placeSearch = new AMap.PlaceSearch({
+        map: mapObj,
+      }) //构造地点查询类
+      AMap.event.addListener(auto, 'select', select) //注册监听，当选中某条记录时会触发
+      function select(e) {
+        document.getElementById('info').innerHTML = '当前位置：' + e.poi.name
+        placeSearch.setCity(e.poi.adcode)
+        placeSearch.search(e.poi.name, function (status, result) {
+          let pois = result.poiList.pois
+          let path = []
+          for (let i = 0; i < pois.length; i++) {
+            path.push([pois[i].location.lng, pois[i].location.lat])
+          }
+          const polygon = new AMap.Polygon({
+            path: path,
+            strokeColor: '#FF33FF',
+            strokeWeight: 6,
+            strokeOpacity: 0.2,
+            fillOpacity: 0.4,
+            fillColor: '#1791fc',
+            zIndex: 50,
+          })
+
+          mapObj.add(polygon)
+          // 缩放地图到合适的视野级别
+          mapObj.setFitView([polygon])
+        }) //关键字查询查询
+      }
+
+      mapObj.plugin('AMap.Geolocation', function () {
+        const options = {
+          showButton: true, //是否显示定位按钮
+          buttonPosition: 'LB', //定位按钮的位置
+          /* LT LB RT RB */
+          buttonOffset: new AMap.Pixel(10, 20), //定位按钮距离对应角落的距离
+          showMarker: true, //是否显示定位点
+        }
+        geolocation = new AMap.Geolocation(options)
+
+        mapObj.addControl(geolocation)
+
+        geolocation.getCurrentPosition((status, result) => {
+          //
+          document.getElementById('info').innerHTML =
+            '当前位置：' +
+            (result.formattedAddress === undefined
+              ? result.formattedAddress
+              : '')
+        })
+        AMap.event.addListener(geolocation, 'complete', onComplete) //返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError) //返回定位出错信息
+      })
+
+      // 基于准备好的dom，初始化echarts实例
+      const dial1 = echarts.init(document.getElementById('dial1'))
+      const dial2 = echarts.init(document.getElementById('dial2'))
+      const dial3 = echarts.init(document.getElementById('dial3'))
+      // const dial4 = echarts.init(document.getElementById('dial4'))
+
+      // 指定图表的配置项和数据
+      var option = {
+        title: {
+          text: 'xxx',
+          top: 0,
+        },
+        aria: {
+          show: false,
+          description: 'aaaa',
+        },
+
+        // xAxis: {
+        //   data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子'],
+        // },
+        // yAxis: {},
+        series: [
+          {
+            name: 'gauge1',
+            value: 10,
+            type: 'gauge',
+            radius: '75%',
+            startAngle: '225',
+            endAngle: '-45',
+            clockwise: true,
+            data: [360],
+          },
+          {
+            name: 'gauge2',
+            value: 20,
+            type: 'gauge',
+            radius: '75%',
+            startAngle: '225',
+            endAngle: '-45',
+            clockwise: true,
+            data: [360],
+          },
+        ],
+      }
+
+      // 使用刚指定的配置项和数据显示图表。
+      dial1.setOption(option)
+      dial2.setOption(option)
+      dial3.setOption(option)
+      // dial4.setOption(option)
+    </script>
+  </body>
+</html>

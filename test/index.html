@@ -1,0 +1,181 @@
+<!--
+ * @Author: ndzy
+ * @Date: 2020-02-21 18:24:58
+ * @LastEditTime: 2020-02-21 21:14:46
+ * @LastEditors: ndzy
+ -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+    <script src="./vue.js"></script>
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+    <script src="./axios.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app" >
+      {{ message }}
+      <Comment :list="list" />
+
+      <!-- <div v-for="itemS in item.list" ::key="itemS.id" style="margin-left: 20px;">
+        <img :src="itemS.headImg" width="20" height="20" />
+        <span>{{itemS.username}}&nbsp;回复&nbsp;</span>
+        <span>{{itemS.toUsername}}</span>
+        <img :src="itemS.toUserHeadImg" width="20" height="20" />
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;{{itemS.time}}</span>
+        <p>{{ itemS.content }}</p>
+      </div> -->
+ 
+     
+    
+    <script>
+      function timeFn(time) {
+  if (time > 60 && time < 60 * 24) {
+    const h = parseInt(time / 60)
+
+    return `${h}小时前`
+  }
+  if (time > 60 * 24 && time <= 60 * 24 * 30) {
+    const d = parseInt(time / (60 * 24))
+    return `${d}天前`
+  }
+  if (time > 60 * 24 * 30 && time <= 60 * 24 * 30 * 12) {
+    const m = parseInt(time / (60 * 24 * 30))
+    return `${m}月前`
+  }
+  if (time > 60 * 24 * 30 * 12) {
+    const y = parseInt(time / (60 * 24 * 30 * 12))
+    return `${y}年前`
+  }
+  return `${time}分钟前`
+}
+      
+      function generateOptions(dataList) {
+  //生成Cascader级联数据
+  // 定义result存储生成的数据
+  let result = []
+
+  for (let obj of dataList) {
+    // 判断父id是否存在,0顶层节点
+    // console.log(obj)
+    if (obj.parent_id == 0) {
+      let parent = {
+        //转换成el-Cascader可以识别的数据结构
+        id: obj.id,
+        time: timeFn(obj.time),
+        content: obj.content,
+        userId: obj.user_id,
+        username: obj.username,
+        headImg: obj.headImg,
+        toUsername: obj.toUsername,
+        toUserHeadImg: obj.toUserHeadImg,
+        list: '',
+      }
+      // console.log(parent)
+      parent.list = getChildS(obj.id, dataList) //获取子节点
+      result.push(parent)
+    }
+  }
+  return result
+}
+function getChildS(id, dataList) {
+  let list = new Array()
+  for (let obj of dataList) {
+    //循环获取子节点
+    if (obj.parent_id == id) {
+      list.push({
+        id: obj.id,
+        time: timeFn(obj.time),
+        content: obj.content,
+        userId: obj.user_id,
+        username: obj.username,
+        headImg: obj.headImg,
+        toUsername: obj.toUsername,
+        toUserHeadImg: obj.toUserHeadImg,
+        list: '',
+      })
+    }
+  }
+
+  for (let child of list) {
+    //获取子节点的子节点
+    let childCopy = getChildS(child.id, dataList) //递归获取子节点
+    if (childCopy.length > 0) {
+      child.list = childCopy
+    }
+  }
+  return list
+}
+      Vue.component('comment', {
+  props: ['list'],
+  data() {
+    return {
+      comments: [],
+    }
+  },
+  created() {
+    console.log(this.list)
+              const that = this
+          
+          axios
+            .post('http://localhost:3880/comment', {
+              questionId:
+                'CdKWP3E2XsffxS4DbhrFQy3FQeQPEB6RWhcfNz6W33drFYmh6hZXxi34kKKBNmsSwPFPf2YCbsA32ajyQRfTe5jp72DbXGNDesPm',
+            })
+            .then(function(response) {
+              that.comments = generateOptions(response.data.data)
+              console.log(that.comments)
+            })
+            .catch(function(error) {
+              console.log(error)
+            })
+  },
+  // <img :src="item.headImg" width="20" height="20" />
+  // <img :src="item.toUserHeadImg" width="20" height="20" />
+  template: `
+        <div v-for="item in list" :key="item.id">
+          <img :src="item.headImg" width="20" height="20" />
+          <span>{{item.username}}&nbsp;评论了&nbsp;</span>
+          <span>{{item.toUsername}}</span>
+          <img :src="item.toUserHeadImg" width="20" height="20" />
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;{{item.time}}</span>
+          <p>{{ item.content }}</p>
+          <Comment v-if="item.list!=''" :list="item.list" />
+        </div>
+      `
+})
+       
+
+
+     
+      var app = new Vue({
+        el: '#app',
+        data: {
+          message: 'Hello Vue!',
+          list: [],
+        },
+        created() {
+              const that = this
+          
+          axios
+            .post('http://localhost:3880/comment', {
+              questionId:
+                'CdKWP3E2XsffxS4DbhrFQy3FQeQPEB6RWhcfNz6W33drFYmh6hZXxi34kKKBNmsSwPFPf2YCbsA32ajyQRfTe5jp72DbXGNDesPm',
+            })
+            .then(function(response) {
+              that.list = generateOptions(response.data.data)
+            })
+            .catch(function(error) {
+              console.log(error)
+            })
+  },
+        methods: {
+          a() {},
+        },
+      })
+    </script>
+  </body>
+</html>
